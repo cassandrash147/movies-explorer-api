@@ -1,21 +1,27 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
+const jwtAuth = require('jsonwebtoken');
+const { jwt } = require('../config/devConfig');
+const {
+  JWT_SECRET,
+  NODE_ENV,
+} = require('../config/processConfig');
 const UnauthorizedError = require('../errors/UnauthorizedError');
+const { messages } = require('../config/messages');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    throw next(new UnauthorizedError('Нет токена или либо он начинается не с Bearer'));
+    throw next(new UnauthorizedError(messages.authorizationRequired));
   }
   const token = authorization.replace('Bearer ', '');
-  const { NODE_ENV, JWT_SECRET } = process.env;
+
   let payload;
   try {
     // попытаемся верифицировать токен
-    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+    payload = jwtAuth.verify(token, NODE_ENV === 'production' ? JWT_SECRET : jwt.secretKey);
   } catch (err) {
     // отправим ошибку, если не получилось
-    throw next(new UnauthorizedError(err));
+    throw next(new UnauthorizedError(err.message));
   }
   req.user = payload; // записываем пейлоуд в объект запроса
 

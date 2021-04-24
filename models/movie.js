@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const messages = require('../config/messages');
 
 const movieSchema = new mongoose.Schema({
   country: {
@@ -31,7 +32,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (url) => validator.isURL(url),
-      message: (props) => `${props.value} некорректный URL!`,
+      message: messages.incorrectUrl,
     },
   },
   trailer: {
@@ -39,7 +40,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (url) => validator.isURL(url),
-      message: (props) => `${props.value} некорректный URL!`,
+      message: messages.incorrectUrl,
     },
   },
 
@@ -48,7 +49,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (url) => validator.isURL(url),
-      message: (props) => `${props.value} некорректный URL!`,
+      message: messages.incorrectUrl,
     },
   },
 

@@ -1,13 +1,29 @@
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
+const messages = require('../config/messages');
 
-const urlValidator = (url, helpers) => (validator.isURL(url) ? url : helpers.message('Некоректный Url'));
+const urlValidator = (url,
+  helpers) => (validator.isURL(url) ? url : helpers.message(messages.incorrectUrl));
 
-const userValidate = celebrate({
+const userCreateValidate = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(6),
+  }),
+});
+
+const userLoginValidate = celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(6),
+  }),
+});
+
+const userUpdateValidate = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    email: Joi.string().required().email(),
   }),
 });
 
@@ -18,9 +34,9 @@ const movieValidate = celebrate({
     duration: Joi.number().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
-    image: Joi.string().required().custom(urlValidator, 'URL validation.'),
-    trailer: Joi.string().required().custom(urlValidator, 'URL validation.'),
-    thumbnail: Joi.string().required().custom(urlValidator, 'URL validation.'),
+    image: Joi.string().required().custom(urlValidator, messages.incorrectUrl),
+    trailer: Joi.string().required().custom(urlValidator, messages.incorrectUrl),
+    thumbnail: Joi.string().required().custom(urlValidator, messages.incorrectUrl),
     movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
@@ -34,5 +50,5 @@ const movieIdValidate = celebrate({
 });
 
 module.exports = {
-  movieIdValidate, userValidate, movieValidate,
+  movieIdValidate, userCreateValidate, userLoginValidate, movieValidate, userUpdateValidate,
 };

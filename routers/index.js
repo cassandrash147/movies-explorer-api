@@ -4,16 +4,20 @@ const userRouter = require('./users');
 const movieRouter = require('./movies');
 
 const auth = require('../middlewares/auth');
-const { userValidate } = require('../middlewares/validate');
+const { userCreateValidate, userLoginValidate } = require('../middlewares/validate');
 const { createUser, login } = require('../controllers/users');
 
+const getError = require('../controllers/error');
+
 // роуты, не требующие авторизации
-router.post('/signin', userValidate, login);
+router.post('/signin', userLoginValidate, login);
 
-router.post('/signup', userValidate, createUser);
+router.post('/signup', userCreateValidate, createUser);
 
-router.use('/users', auth, userRouter);
+// роуты, требующие авторизации
+router.use(auth);
+router.use('/', auth, userRouter);
 
-router.use('/movies', auth, movieRouter);
-
+router.use('/', auth, movieRouter);
+router.use('*', getError);
 module.exports = router;

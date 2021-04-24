@@ -2,6 +2,7 @@ const movieModel = require('../models/movie');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const BadRequestError = require('../errors/BadRequestError');
+const { messages } = require('../config/messages');
 
 const getMovies = (req, res, next) => movieModel.find({})
   .then((movies) => res.status(200).send(movies))
@@ -41,7 +42,7 @@ const createMovie = (req, res, next) => {
   // данные не записались, вернём ошибку
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Ошибка. Карточка не была создана'));
+        next(new BadRequestError(messages.validationFalied));
         return;
       }
 
@@ -53,17 +54,16 @@ const deleteMovie = (req, res, next) => movieModel.findByIdAndRemove(req.params.
 
   .then((movie) => {
     if (!movie) {
-      throw new NotFoundError('Карточка фильма не найдена');
+      throw new NotFoundError(messages.movieNotExist);
     } else if (movie.owner.toString() !== req.user._id) {
-      throw new ForbiddenError('Нельзя удалять чужую карточку фильма');
+      throw new ForbiddenError(messages.someonEelsesMovie);
     }
-    movieModel.deleteOne({ _id: req.params.id });
-
-    return res.status(200).send(movie);
+    movieModel.deleteOne({ _id: req.params.id })
+      .then((removedMovie) => res.status(200).send(removedMovie));
   })
   .catch((err) => {
     if (err.name === 'CastError') {
-      next(new BadRequestError('Нет карточки фильма с таким id'));
+      next(new BadRequestError(messages.сastError));
       return;
     }
     next(err);

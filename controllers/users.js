@@ -13,14 +13,15 @@ const {
   EXPIRES,
   NODE_ENV,
 } = require('../config/processConfig');
+const { messages } = require('../config/messages');
 
 const getCurrentUser = (req, res, next) => {
   userModel.findOne({ _id: req.user._id }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new BadRequestError(`Пользователь не найден ${req.user._id}`);
+        throw new BadRequestError(messages.userNotFound);
       }
-      return res.status(200).send(user);
+      return res.status(200).send({ _id: user._id, name: user.name, email: user.email });
     })
     .catch(next);
 };
@@ -35,16 +36,16 @@ const createUser = (req, res, next) => {
     }))
 
     // вернём записанные в базу данные
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(201).send({ _id: user._id, name: user.name, email: user.email }))
     // данные не записались, вернём ошибку
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Ошибка валидации'));
+        next(new BadRequestError(messages.validationFalied));
         return;
       }
 
       if (err.name === 'MongoError' && err.code === 11000) {
-        next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
+        next(new ConflictError(messages.userAlreadyExists));
         return;
       }
 
@@ -53,30 +54,37 @@ const createUser = (req, res, next) => {
 };
 
 const updateProfile = (req, res, next) => {
-  const { name, email } = req.body;
-  if (userModel.findUserByCredentials(email)) {
-    throw new BadRequestError('Пользователь с такой почтой уже зарегестрирован. Укажите другой email или перелогиньтесь');
-  }
-  userModel.findByIdAndUpdate(req.user._id, { name, email }, { new: true, runValidators: true })
-    // вернём записанные в базу данные
+  userModel.findOne({ email: req.body.email })
     .then((user) => {
-      if (!user) {
-        throw new BadRequestError('Нет пользователя с таким id. Нельзя изменить несущетсвуещего пользователя');
-      }
+      if (user) {
+        next(new ConflictError(messages.userAlreadyExists));
+      } else {
+        const { name, email } = req.body;
+        userModel.findByIdAndUpdate(req.user._id, { name, email },
+          { new: true, runValidators: true })
+        // вернём записанные в базу данные
+          .then((newuser) => {
+            if (!newuser) {
+              throw new BadRequestError(messages.userNotFound);
+            }
 
-      return res.status(200).send(user);
-    })
+            return res.status(200).send(
+              { _id: newuser._id, name: newuser.name, email: newuser.email },
+            );
+          })
 
-    // данные не записались, вернём ошибку
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(`Ошибка валидации ${err.message}`));
-        return;
-      } if (err.name === 'CastError') {
-        next(new BadRequestError('Нет пользователя с таким id. Нельзя изменить несущетсвуещего польователя'));
-        return;
+        // данные не записались, вернём ошибку
+          .catch((err) => {
+            if (err.name === 'ValidationError') {
+              next(new BadRequestError(messages.validationFalied));
+              return;
+            } if (err.name === 'CastError') {
+              next(new BadRequestError(messages.userNotFound));
+              return;
+            }
+            next(err);
+          });
       }
-      next(err);
     });
 };
 
@@ -93,7 +101,7 @@ const login = (req, res, next) => {
     })
     .catch((err) => {
       // ошибка аутентификации
-      next(new UnauthorizedError(`Ошибка аутентификации ${err}`));
+      next(new UnauthorizedError(err.message));
     });
 };
 
