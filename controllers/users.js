@@ -101,6 +101,7 @@ const login = (req, res, next) => {
     })
     .catch((err) => {
       // ошибка аутентификации
+
       next(new UnauthorizedError(err.message));
     });
 };

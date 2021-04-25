@@ -59,7 +59,7 @@ const deleteMovie = (req, res, next) => movieModel.findByIdAndRemove(req.params.
       throw new ForbiddenError(messages.someonEelsesMovie);
     }
     movieModel.deleteOne({ _id: req.params.id })
-      .then((removedMovie) => res.status(200).send(removedMovie));
+      .then(() => res.status(200).send(movie));
   })
   .catch((err) => {
     if (err.name === 'CastError') {

@@ -1,22 +1,16 @@
 const {
   isCelebrateError,
 } = require('celebrate');
-const messages = require('../config/messages');
 
 const errorHandling = (err, req, res, next) => {
   if (isCelebrateError(err)) {
-    return res.status(400).send(err.message);
+    return res.status(400).send({ message: err.message });
   }
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      // проверяем статус и выставляем сообщение в зависимости от него
-      message: statusCode === 500
-        ? messages.internalServerError
-        : message,
-    });
-  return next();
+  if (err.status) {
+    return res.status(err.status).send({ message: err.message });
+  }
+  next(err);
+  return res.status(500).send({ message: err.message });
 };
 
 module.exports = {

@@ -9,7 +9,7 @@ const helmet = require('helmet');
 const router = require('./routers/index');
 const options = require('./config/corsoptions');
 const { errorHandling } = require('./middlewares/errorsHandler');
-const messages = require('./config/messages');
+const { messages } = require('./config/messages');
 
 const app = express();
 

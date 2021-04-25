@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
 const validator = require('validator');
-const messages = require('../config/messages');
+const { messages } = require('../config/messages');
 
 const urlValidator = (url,
   helpers) => (validator.isURL(url) ? url : helpers.message(messages.incorrectUrl));
