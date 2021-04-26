@@ -1,0 +1,47 @@
+{
+  "name": "movies_explorer",
+  "version": "1.0.0",
+  "description": "backend приложения movies explorer",
+  "main": "app.js",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "celebrate": "^14.0.0",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.2.6",
+    "express-slow-down": "^1.4.0",
+    "express-winston": "^4.1.0",
+    "helmet": "^4.5.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.11.18",
+    "validator": "^13.5.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "eslint": "^7.20.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "lint": "eslint ./",
+    "copy": "pscp -scp -r * aleks@178.154.197.230:/home/aleks/movies-explorer-api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cassandrash147/movies-explorer-api.git"
+  },
+  "keywords": [],
+  "author": "Александра Перепеченко",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cassandrash147/movies-explorer-api/issues"
+  },
+  "homepage": "https://github.com/cassandrash147/movies-explorer-api#readme"
+}
