@@ -28,11 +28,11 @@ const getCurrentUser = (req, res, next) => {
 
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    name, email, password,
   } = req.body;
   bcrypt.hash(password, NODE_ENV === 'production' ? Number(SALT) : pass.salt)
     .then((hash) => userModel.create({
-      name, about, avatar, email, password: hash,
+      name, email, password: hash,
     }))
 
     // вернём записанные в базу данные
@@ -40,51 +40,49 @@ const createUser = (req, res, next) => {
     // данные не записались, вернём ошибку
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError(messages.validationFalied));
-        return;
+        throw new BadRequestError(messages.validationFalied);
       }
 
       if (err.name === 'MongoError' && err.code === 11000) {
-        next(new ConflictError(messages.userAlreadyExists));
-        return;
+        throw new ConflictError(messages.userAlreadyExists);
       }
 
       next(err);
-    });
+    })
+    .catch(next);
 };
 
 const updateProfile = (req, res, next) => {
   userModel.findOne({ email: req.body.email })
-    .then((user) => {
-      if (user) {
-        next(new ConflictError(messages.userAlreadyExists));
-      } else {
-        const { name, email } = req.body;
-        userModel.findByIdAndUpdate(req.user._id, { name, email },
-          { new: true, runValidators: true })
+    .then(() => {
+      const { name, email } = req.body;
+      userModel.findByIdAndUpdate(req.user._id, { name, email },
+        { new: true, runValidators: true })
         // вернём записанные в базу данные
-          .then((newuser) => {
-            if (!newuser) {
-              throw new BadRequestError(messages.userNotFound);
-            }
+        .then((newuser) => {
+          if (!newuser) {
+            throw new BadRequestError(messages.userNotFound);
+          }
 
-            return res.status(200).send(
-              { _id: newuser._id, name: newuser.name, email: newuser.email },
-            );
-          })
+          return res.status(200).send(
+            { _id: newuser._id, name: newuser.name, email: newuser.email },
+          );
+        })
 
         // данные не записались, вернём ошибку
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(new BadRequestError(messages.validationFalied));
-              return;
-            } if (err.name === 'CastError') {
-              next(new BadRequestError(messages.userNotFound));
-              return;
-            }
-            next(err);
-          });
-      }
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            next(new BadRequestError(messages.validationFalied));
+            return;
+          } if (err.name === 'CastError') {
+            next(new BadRequestError(messages.userNotFound));
+          } if (err.name === 'MongoError' && err.code === 11000) {
+            next(new ConflictError(messages.userAlreadyExists));
+            return;
+          }
+
+          next(err);
+        });
     });
 };
 
