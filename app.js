@@ -47,7 +47,7 @@ app.get('/crash-test', () => {
 });
 
 app.use(cors(options), limiter, speedLimiter, helmet());
-app.use(router);
+app.use('/', router);
 
 // обработчики ошибок
 app.use(errorLogger);
